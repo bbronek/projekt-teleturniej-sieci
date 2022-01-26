@@ -32,7 +32,6 @@ public class Server
             } else if(line == "") {
                 question.setText(text);
                 question.setAnswer(answer);
-                question.setId(i);
                 text = "";
                 answer = null;
                 listOfQuestions.add(question);
@@ -41,8 +40,16 @@ public class Server
                 text += separated[0] + '\n';
             }
         }
+        randomizingQuestions(listOfQuestions);
+    }
 
+    public static void randomizingQuestions(List<Question> listOfQuestions) {
         Collections.shuffle(listOfQuestions);
+        Queue<Question> queueOfQuestions = new LinkedList<>();
+
+        for (int i = 0; i< 10; ++i) {
+            queueOfQuestions.add(listOfQuestions.get(i));
+        }
     }
 
     public static void main(String[] args) throws IOException
