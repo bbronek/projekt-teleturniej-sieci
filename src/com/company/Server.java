@@ -18,7 +18,7 @@ public class Server
     public static void main(String[] args) throws IOException
     {
         // server is listening on port 1234
-        ServerSocket ss = new ServerSocket(1235);
+        ServerSocket ss = new ServerSocket(1234);
 
         Socket s;
 
@@ -56,9 +56,10 @@ public class Server
                    // i is used for naming only, and can be replaced
                    // by any naming scheme
                    dos.writeUTF("WELCOME!\nYour nick is Player "+i);
-                   if (i == 1)
+                   if (i == 1) {
                        dos.writeUTF("You are admin");
-                        dos.writeUTF("Type 'Start' to start game.");
+                       dos.writeUTF("Type 'Start' to start game.");
+                   }
                    i++;
                }else if(gameInProgress)
                {

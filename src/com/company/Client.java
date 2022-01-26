@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 public class Client
 {
-    final static int ServerPort = 1235;
+    final static int ServerPort = 1234;
 
     public static void main(String args[]) throws UnknownHostException, IOException
     {
@@ -55,7 +55,8 @@ public class Client
                         System.out.println(msg);
                     } catch (IOException e) {
 
-                        e.printStackTrace();
+                        System.out.println("Connection with server lost");
+                        break;
                     }
                 }
             }

@@ -36,10 +36,8 @@ class ClientHandler implements Runnable
         {
             try
             {
-
                 // receive the string
                 received = dis.readUTF();
-
                 System.out.println(this.name+": "+received);
 
                 if(received.equals("Start") & this.name.equals("Player 1")){
@@ -52,13 +50,11 @@ class ClientHandler implements Runnable
                     this.s.close();
                     break;
                 }
-
-
             } catch (IOException e) {
-
-                e.printStackTrace();
+                System.out.println(this.name+" disconnected");
+                Server.i-=1;
+                break;
             }
-
         }
         try
         {
