@@ -15,7 +15,7 @@ public class Server
     static boolean gameInProgress=false;
     static int i = 1;
 
-    public static void setQuestions(List<Question> listOfQuestions) throws FileNotFoundException {
+    public static void setQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) throws FileNotFoundException {
         String line, answer = null;
         String text = "";
         String[] separated;
@@ -41,12 +41,11 @@ public class Server
                 text += separated[0] + '\n';
             }
         }
-        randomizingQuestions(listOfQuestions);
+        randomizingQuestions(listOfQuestions, queueOfQuestions);
     }
 
-    public static void randomizingQuestions(List<Question> listOfQuestions) {
+    public static void randomizingQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) {
         Collections.shuffle(listOfQuestions);
-        Queue<Question> queueOfQuestions = new LinkedList<>();
 
         for (int i = 0; i< 10; ++i) {
             queueOfQuestions.add(listOfQuestions.get(i));
@@ -59,8 +58,9 @@ public class Server
         ServerSocket ss = new ServerSocket(1234);
         Socket s;
         List<Question> listOfQuestions = new ArrayList<>();
+        Queue<Question> queueOfQuestions = new LinkedList<>();
 
-        setQuestions(listOfQuestions);
+        setQuestions(listOfQuestions, queueOfQuestions);
 
         // running infinite loop for getting
         // client request
