@@ -55,7 +55,8 @@ public class Client
                         System.out.println(msg);
                     } catch (IOException e) {
 
-                        e.printStackTrace();
+                        System.out.println("Connection with server lost");
+                        break;
                     }
                 }
             }
