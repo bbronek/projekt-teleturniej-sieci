@@ -36,10 +36,16 @@ class ClientHandler implements Runnable
         {
             try
             {
+
                 // receive the string
                 received = dis.readUTF();
 
-                System.out.println(received);
+                System.out.println(this.name+": "+received);
+
+                if(received.equals("Start") & this.name.equals("Player 1")){
+                    Server.gameInProgress=true;
+                    Server.startGame();
+                }
 
                 if(received.equals("logout")){
                     this.isloggedin=false;
