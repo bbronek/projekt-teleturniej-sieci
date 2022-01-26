@@ -42,7 +42,7 @@ class ClientHandler implements Runnable
 
                 if(received.equals("Start") & this.name.equals("Player 1")){
                     Server.gameInProgress=true;
-                    Server.startGame();
+                    Server.startGame(Server.queueOfQuestions);
                 }
 
                 if(received.equals("logout")){

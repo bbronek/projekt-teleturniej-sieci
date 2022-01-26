@@ -14,7 +14,7 @@ public class Server
     // counter for clients
     static boolean gameInProgress=false;
     static int i = 1;
-
+    public static Queue<Question> queueOfQuestions = new LinkedList<>();
     public static void setQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) throws FileNotFoundException {
         String line, answer = null;
         String text = "";
@@ -58,7 +58,7 @@ public class Server
         ServerSocket ss = new ServerSocket(1234);
         Socket s;
         List<Question> listOfQuestions = new ArrayList<>();
-        Queue<Question> queueOfQuestions = new LinkedList<>();
+
 
         setQuestions(listOfQuestions, queueOfQuestions);
 
@@ -123,15 +123,16 @@ public class Server
         }
     }
 
-     public static void startGame() {
+     public static void startGame(Queue<Question> queueOfQuestions) {
          System.out.println("Game started");
-         //for (ilość pytań)
+         //for (ilość pytań w kolejce)
+         Question question = queueOfQuestions.remove();
              for(ClientHandler cli : ar)
              {
                  try {
-                     String question = "aasdads"; //zczytwyanie pierwszego pytania z brzegu
-                     String answer="";
-                     cli.dos.writeUTF(question);
+                     String questionText = question.getText(); //zczytwyanie pierwszego pytania z brzegu
+                     String answer=question.getAnswer();
+                     cli.dos.writeUTF(questionText);
                      System.out.println(cli.getName());
                      //while(ilość odpowiedzi!=ilości graczy lub cli.dis.readUTF()!=answer)
                      //{
@@ -139,7 +140,6 @@ public class Server
                      //}
                      //wyśletlenie nazwy gracza który udzielił poprawnej opopiwedzi
                      //+1 punkt dla tego gracza
-                     //--ilość pytań
          //koniec fora
          //wyświeltlenie wyników
                  }catch(IOException e){
