@@ -1,0 +1,100 @@
+What is the capital of Germany?=b
+a)  Brasil
+b)  Berlin
+c)  Buenos Dias
+
+In which year did the Western Roman Empire fall?=c
+a) 473
+b) 393
+c) 476
+
+In what year was the Baptism of Poland?=a
+a) 966
+b) 666
+c) 996
+
+What is the result of 3/5 + 1/10=b
+a) 5/10
+b) 7/10
+c) 7/49
+
+How many bits are in one byte?=a
+a) 8
+b) 4
+c) 2
+
+What is FTP?=c
+a) File Teleportation Protocols
+b) File Transfer Paragraph
+c) File Transfer Protocol
+
+What is duck typing?=a
+a) recognition of an object by its declaration
+b) duck dance
+c) special persian infantry
+
+Which one of the following is a programming language?=c
+a) HTML
+b) CSS
+c) JavaScript
+
+What is the result of 2^12=c
+a) 1024
+b) 2056
+c) 4096
+
+What is the approximation of the euler number?=a
+a) 2.72
+b) 2.71
+c) 2.73
+
+How many episodes have the Trailer Park Boys?=a
+a) 107
+b) 89
+c) 123
+
+What does Bubbles from "Trailer Park Boys" do for living?=c
+a) Collects bottles
+b) Welfare
+c) Rebuilds shopping carts
+
+Who founded Nirvana band?=b
+a) Barack Obama
+b) Kurt Cobain
+c) Jeff Bezos
+
+What is the most famous cryptocurrency?=a
+a) Bitcoin
+b) Ethereum
+c) Doge Coin
+
+What is a correct syntax to output "Hello World!" in Java?=b
+a) printf("Hello World!")
+b) System.out.println("Hello World!")
+c) print("Hello World!")
+
+Which of the followings is written in camel case?=a
+a) myVariable
+c) my_variable
+c) my-variable
+
+Which one of the followings is a functional programming language?=a
+a) Elixir
+b) Brainfuck
+c) Perl
+
+Who is the "father of C language"?=c
+a) Linus Torvalds
+b) Jose Valim
+c) Dennis Ritche
+
+What is the result of the derivetive of e^1?=c
+a) e
+b) 1
+c) 0
+
+Which country won Euro 2016?=a
+a) Portugal
+b) Spain
+c) Germany
+
