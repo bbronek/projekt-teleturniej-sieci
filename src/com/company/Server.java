@@ -14,12 +14,52 @@ public class Server
     // counter for clients
     static int i = 0;
 
+    public static void setQuestions(List<Question> listOfQuestions) throws FileNotFoundException {
+        String line, answer = null;
+        String text = "";
+        String[] separated;
+        File questions = new File("src/com/company/questions.txt");
+        Scanner sc = new Scanner(questions);
+        Question question = new Question();
+
+        while (sc.hasNextLine()) {
+            line = sc.nextLine();
+            separated = line.split("\\=");
+
+            if (separated.length == 2) {
+                text += separated[0] + '\n';
+                answer = separated[1];
+            } else if(line == "") {
+                question.setText(text);
+                question.setAnswer(answer);
+                text = "";
+                answer = null;
+                listOfQuestions.add(question);
+                question = new Question();
+            } else {
+                text += separated[0] + '\n';
+            }
+        }
+        randomizingQuestions(listOfQuestions);
+    }
+
+    public static void randomizingQuestions(List<Question> listOfQuestions) {
+        Collections.shuffle(listOfQuestions);
+        Queue<Question> queueOfQuestions = new LinkedList<>();
+
+        for (int i = 0; i< 10; ++i) {
+            queueOfQuestions.add(listOfQuestions.get(i));
+        }
+    }
+
     public static void main(String[] args) throws IOException
     {
         // server is listening on port 1234
         ServerSocket ss = new ServerSocket(1234);
-
         Socket s;
+        List<Question> listOfQuestions = new ArrayList<>();
+
+        setQuestions(listOfQuestions);
 
         // running infinite loop for getting
         // client request
