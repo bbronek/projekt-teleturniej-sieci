@@ -126,25 +126,40 @@ public class Server
      public static void startGame(Queue<Question> queueOfQuestions) {
          System.out.println("Game started");
          //for (ilość pytań w kolejce)
-         Question question = queueOfQuestions.remove();
+             Question question = queueOfQuestions.remove();
+             String questionText = question.getText(); //zczytwyanie pierwszego pytania z brzegu
+             String answer=question.getAnswer();
              for(ClientHandler cli : ar)
              {
                  try {
-                     String questionText = question.getText(); //zczytwyanie pierwszego pytania z brzegu
-                     String answer=question.getAnswer();
+
                      cli.dos.writeUTF(questionText);
-                     System.out.println(cli.getName());
-                     //while(ilość odpowiedzi!=ilości graczy lub cli.dis.readUTF()!=answer)
-                     //{
-                     //    kod odpowiedzialny za odczyt odpowiedzi wraz z ich nadawcami
-                     //}
-                     //wyśletlenie nazwy gracza który udzielił poprawnej opopiwedzi
-                     //+1 punkt dla tego gracza
-         //koniec fora
-         //wyświeltlenie wyników
+                     //System.out.println(cli.getName());
+
                  }catch(IOException e){
                      System.out.println("error");
                  }
              }
-     }
+             for (ClientHandler cli : ar)
+             {
+                 try{
+                     String cliAnswer = cli.dis.readUTF();
+                     //String cliAnswer =cli.dis.readUTF();
+                     System.out.println(cli.getName() + ": " + cliAnswer);
+                     if (cliAnswer.equals(answer)) {
+                         System.out.println("correct");
+                         break;
+                         //inni nie powwini moc podawac odpowiedzi
+                     }
+                 }catch (IOException e){
+                     System.out.println("error");
+                 }
+             }
+             System.out.println("next_question");
+             //wyśletlenie nazwy gracza który udzielił poprawnej opopiwedzi
+             //+1 punkt dla tego gracza
+
+         //koniec fora z iloscia pytan
+         //wyświeltlenie wyników
+    }
 }
