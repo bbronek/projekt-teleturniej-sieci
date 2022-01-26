@@ -125,8 +125,26 @@ public class Server
 
      public static void startGame() {
          System.out.println("Game started");
-         //
-         // miejsce na kod z przebiegiem gry
-         //
+         //for (ilość pytań)
+             for(ClientHandler cli : ar)
+             {
+                 try {
+                     String question = "aasdads"; //zczytwyanie pierwszego pytania z brzegu
+                     String answer="";
+                     cli.dos.writeUTF(question);
+                     System.out.println(cli.getName());
+                     //while(ilość odpowiedzi!=ilości graczy lub cli.dis.readUTF()!=answer)
+                     //{
+                     //    kod odpowiedzialny za odczyt odpowiedzi wraz z ich nadawcami
+                     //}
+                     //wyśletlenie nazwy gracza który udzielił poprawnej opopiwedzi
+                     //+1 punkt dla tego gracza
+                     //--ilość pytań
+         //koniec fora
+         //wyświeltlenie wyników
+                 }catch(IOException e){
+                     System.out.println("error");
+                 }
+             }
      }
 }
