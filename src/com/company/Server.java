@@ -61,6 +61,10 @@ public class Server {
         }
     }
 
+    public static Question popQueue(Queue<Question> queueOfQuestions) {
+        return queueOfQuestions.remove();
+    }
+
     public static void main(String[] args) throws IOException {
         /* server is listening on port 1234 */
         ServerSocket ss = new ServerSocket(1234);
@@ -132,7 +136,7 @@ public class Server {
          System.out.println("Game started");
 
          for(int i = 0; i< queueOfQuestions.size(); ++i) {
-             Question question = queueOfQuestions.remove();
+             Question question = popQueue(queueOfQuestions);
              String questionText = question.getText(); //zczytwyanie pierwszego pytania z brzegu
              String answer=question.getAnswer();
 
