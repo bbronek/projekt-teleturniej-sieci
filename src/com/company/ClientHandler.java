@@ -4,17 +4,19 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
-// ClientHandler class
-class ClientHandler implements Runnable
-{
-    Scanner scn = new Scanner(System.in);
-    private String name;
+/**
+ * ClientHandler class
+ */
+class ClientHandler implements Runnable {
+    final String name;
     final DataInputStream dis;
     final DataOutputStream dos;
     Socket s;
     boolean isloggedin;
 
-    // constructor
+    /**
+     * constructor
+     */
     public ClientHandler(Socket s, String name,
                          DataInputStream dis, DataOutputStream dos) {
         this.dis = dis;
@@ -30,22 +32,20 @@ class ClientHandler implements Runnable
 
     @Override
     public void run() {
-
         String received;
-        while (true)
-        {
-            try
-            {
-                // receive the string
+
+        while (true) {
+            try {
+                /* receive the string */
                 received = dis.readUTF();
                 System.out.println(this.name+": "+received);
 
-                if(received.equals("Start") & this.name.equals("Player 1")){
+                if(received.equals("Start") & this.name.equals("Player 1")) {
                     Server.gameInProgress=true;
                     Server.startGame(Server.queueOfQuestions);
                 }
 
-                if(received.equals("logout")){
+                if(received.equals("logout")) {
                     this.isloggedin=false;
                     this.s.close();
                     break;
@@ -56,13 +56,11 @@ class ClientHandler implements Runnable
                 break;
             }
         }
-        try
-        {
-            // closing resources
+        try {
+            /* closing resources */
             this.dis.close();
             this.dos.close();
-
-        }catch(IOException e){
+        } catch(IOException e) {
             e.printStackTrace();
         }
     }
