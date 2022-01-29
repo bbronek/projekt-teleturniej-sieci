@@ -131,44 +131,5 @@ public class Server {
            }
         }
     }
-
-     public static void startGame(@NotNull Queue<Question> queueOfQuestions) {
-         System.out.println("Game started");
-
-         for(int i = 0; i< queueOfQuestions.size(); ++i) {
-             Question question = popQueue(queueOfQuestions);
-             String questionText = question.getText(); //zczytwyanie pierwszego pytania z brzegu
-             String answer=question.getAnswer();
-
-             for(ClientHandler cli : ar) {
-                 try {
-                     cli.dos.writeUTF(questionText);
-                     //System.out.println(cli.getName());
-                 } catch(IOException e){
-                     System.out.println("error");
-                 }
-             }
-             for (ClientHandler cli : ar) {
-                 try {
-                     String cliAnswer = cli.dis.readUTF();
-                     //String cliAnswer =cli.dis.readUTF();
-                     System.out.println(cli.getName() + ": " + cliAnswer);
-                     if (cliAnswer.equals(answer)) {
-                         System.out.println("correct");
-                         break;
-                         //inni nie powwini moc podawac odpowiedzi
-                     }
-                 } catch (IOException e){
-                     System.out.println("error");
-                 }
-             }
-         }
-
-         System.out.println("next_question");
-         //wyśletlenie nazwy gracza który udzielił poprawnej opopiwedzi
-         //+1 punkt dla tego gracza
-
-         //koniec fora z iloscia pytan
-         //wyświeltlenie wyników
-    }
 }
+
