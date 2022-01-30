@@ -20,62 +20,57 @@ class ClientHandler implements Runnable {
         this.dos = dos;
         this.name = name;
         this.s = s;
-        this.isloggedin=true;
-        this.isInGame=false;
+        this.isloggedin = true;
+        this.isInGame = false;
     }
 
     public String getName() {
         return name;
     }
 
-    public static void sendQuestion(String questionText) {
-        for (ClientHandler cli : Server.ar) {
-            try {
-                cli.dos.writeUTF(questionText);
-            } catch (IOException e) {
-                System.err.println("missing user");
-            }
-        }
-    }
-
     @Override
     public void run() {
         String received = "";
-        String firstIterationAnswer = "";
+        String tempAnswer = "";
         boolean openStream = false;
-
 
         while (true) {
            try {
                if (!Server.gameInProgress) {
-                   System.err.println("admin lobby");
+                   System.err.println(this.name + " joined the lobby");
                    received = dis.readUTF();
                    if (this.name.equals("Player 1") && received.equals("Start")) {
                        Server.gameInProgress = true;
                        System.err.println("Game started");
                        openStream = true;
                    } else {
-                       firstIterationAnswer = received;
+                       tempAnswer = received;
                    }
                }
-               Question question = Server.popQueue(Server.queueOfQuestions);
-               String questionText = question.getText();
-               String correctAnswer = question.getAnswer();
-               sendQuestion(questionText);
+
+               if(Server.sendQuestions) {
+                   Server.sendQuestion();
+                   Server.sendQuestions = false;
+               }
 
                if (openStream) {
                    received = dis.readUTF();
                } else {
-                   received = firstIterationAnswer;
+                   received = tempAnswer;
                    openStream = true;
                }
 
-               System.err.println("game functionality\n correctAnswer= " + correctAnswer);
-               System.err.println("receivedAnswer by " + this.getName() + " is: " + received);
+               System.err.println("game functionality\n correctAnswer = " + Server.correctAnswer);
+               System.err.println(" receivedAnswer by " + this.getName() + " is: " + received);
 
-               if (received.equals(correctAnswer)) {
-                   System.err.println("correct answer by " + this.getName());
-               } else if (received.equals("logout")) {
+               if (received.equals(Server.correctAnswer)) {
+                   System.err.println(" correct answer by " + this.getName());
+                   Server.sendQuestions = true;
+               } else {
+                   System.err.println(" wrong answer by " + this.getName());
+               }
+
+               if (received.equals("logout")) {
                    this.isloggedin = false;
                    this.s.close();
                    break;

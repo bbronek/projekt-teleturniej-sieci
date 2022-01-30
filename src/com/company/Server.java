@@ -8,10 +8,13 @@ import java.net.*;
  * The Server class is a logic container of quiz flow
  */
 public class Server {
-    static Vector<ClientHandler> ar = new Vector<>();
-    static boolean gameInProgress = false;
-    static int numberOfPlayers = 1;
     public static Queue<Question> queueOfQuestions = new LinkedList<>();
+    static Vector<ClientHandler> ar = new Vector<>();
+    static int numberOfPlayers = 1;
+    static String questionText;
+    static String correctAnswer;
+    static boolean gameInProgress = false;
+    static boolean sendQuestions = true;
 
     public static void setQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) throws FileNotFoundException {
         String line, answer = null;
@@ -50,8 +53,17 @@ public class Server {
         }
     }
 
-    public static Question popQueue(Queue<Question> queueOfQuestions) {
-        return queueOfQuestions.remove();
+    public static void sendQuestion() {
+        Question question = queueOfQuestions.remove();
+        questionText = question.getText();
+        correctAnswer = question.getAnswer();
+        for (ClientHandler cli : ar) {
+            try {
+                cli.dos.writeUTF(questionText);
+            } catch (IOException e) {
+                System.err.println("missing user");
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException {
