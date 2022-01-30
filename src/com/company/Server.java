@@ -1,7 +1,5 @@
 package com.company;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -11,8 +9,8 @@ import java.net.*;
  */
 public class Server {
     static Vector<ClientHandler> ar = new Vector<>();
-    static boolean gameInProgress=false;
-    static int i = 1;
+    static boolean gameInProgress = false;
+    static int numberOfPlayers = 1;
     public static Queue<Question> queueOfQuestions = new LinkedList<>();
 
     public static void setQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) throws FileNotFoundException {
@@ -70,25 +68,20 @@ public class Server {
                DataInputStream dis = new DataInputStream(s.getInputStream());
                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 
-               if (i < 5 & !gameInProgress) {
-                   System.err.println("Creating a new handler for player " + i);
-                   ClientHandler mtch = new ClientHandler(s, "Player " + i, dis, dos);
-                   Thread t = new Thread(mtch);
-                   System.err.println("Adding player " + i  + " to active client list");
-                   ar.add(mtch);
-                   // start the thread.
+               if (numberOfPlayers < 5 & !gameInProgress) {
+                   System.err.println("Creating a new handler for player " + numberOfPlayers);
+                   ClientHandler player = new ClientHandler(s, "Player " + numberOfPlayers, dis, dos);
+                   System.err.println("Adding player " + numberOfPlayers + " to active client list");
+                   ar.add(player);
+                   Thread t = new Thread(player);
                    t.start();
-                   /*
-                    increment i for new client.
-                    i is used for naming only, and can be replaced
-                    by any naming scheme
-                   */
-                   dos.writeUTF("WELCOME!\nYour nick is Player "+i);
-                   if (i == 1) {
+                   dos.writeUTF("WELCOME!\nYour nick is Player "+ numberOfPlayers);
+
+                   if (numberOfPlayers == 1) {
                        dos.writeUTF("You are admin");
-                       dos.writeUTF("Type 'Start' to start game.");
+                       dos.writeUTF("Type 'Start' to start the game.");
                    }
-                   i++;
+                   numberOfPlayers++;
                } else if(gameInProgress) {
                    dos.writeUTF("Game in progress. Try again later.");
                    throw new Exception("gameInProgress");
@@ -105,6 +98,8 @@ public class Server {
                    System.out.println("No place in lobby. Canceling connection ");
            }
         }
+
+
     }
 }
 

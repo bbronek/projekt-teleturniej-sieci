@@ -40,48 +40,56 @@ class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        String received;
+        String received = "";
+        String firstIterationAnswer = "";
+        boolean openStream = false;
+
+
         while (true) {
            try {
-                /* receive the string */
-               //tutaj jakieś oczekiwanie na input na dis i dopiero przejście do ifów
-                if (Server.gameInProgress) {
-                    Question question = Server.popQueue(Server.queueOfQuestions);
-                    String questionText = question.getText();
-                    String correctAnswer = question.getAnswer();
-                    sendQuestion(questionText);
-                    received = dis.readUTF();
-
-                    System.err.println("correctAnswer= " + correctAnswer + "\ngame functionality");
-                    System.err.println("receivedAnswer by " + this.getName() + " is: " + received);
-
-                    if (received.equals(correctAnswer)) {
-                        System.err.println("correct answer by " + this.getName());
-                    }
-                } else {
-                    System.err.println("else func");
-                    received = dis.readUTF();
-                    if(Server.gameInProgress || this.name.equals("Player 1")) {
-
-                       System.err.println(this.name + ": " + received);
-                       if (this.name.equals("Player 1") && received.equals("Start")) {
-                           Server.gameInProgress = true;
-                           System.err.println("Game started");
-                       } else if (received.equals("logout")) {
-                           this.isloggedin = false;
-                           this.s.close();
-                           break;
-                       }
+               if (!Server.gameInProgress) {
+                   System.err.println("admin lobby");
+                   received = dis.readUTF();
+                   if (this.name.equals("Player 1") && received.equals("Start")) {
+                       Server.gameInProgress = true;
+                       System.err.println("Game started");
+                       openStream = true;
+                   } else {
+                       firstIterationAnswer = received;
                    }
-                }
+               }
+               Question question = Server.popQueue(Server.queueOfQuestions);
+               String questionText = question.getText();
+               String correctAnswer = question.getAnswer();
+               sendQuestion(questionText);
 
-            } catch (IOException e) {
-                System.err.println(this.name + " disconnected");
-                Server.i -= 1;
-                Server.ar.remove(this);
-                break;
-            }
-        } try {
+               if (openStream) {
+                   received = dis.readUTF();
+               } else {
+                   received = firstIterationAnswer;
+                   openStream = true;
+               }
+
+               System.err.println("game functionality\n correctAnswer= " + correctAnswer);
+               System.err.println("receivedAnswer by " + this.getName() + " is: " + received);
+
+               if (received.equals(correctAnswer)) {
+                   System.err.println("correct answer by " + this.getName());
+               } else if (received.equals("logout")) {
+                   this.isloggedin = false;
+                   this.s.close();
+                   break;
+               }
+
+           } catch (IOException e) {
+               System.err.println(this.name + " disconnected");
+               Server.numberOfPlayers -= 1;
+               Server.ar.remove(this);
+               break;
+           }
+        }
+
+        try {
             /* closing resources */
             this.dis.close();
             this.dos.close();
