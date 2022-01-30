@@ -10,7 +10,8 @@ import java.net.*;
 public class Server {
     public static Queue<Question> queueOfQuestions = new LinkedList<>();
     static Vector<ClientHandler> ar = new Vector<>();
-    static int numberOfPlayers = 1;
+    static int numberOfPlayers = 0;
+    static int numberOfWrongAnswers = 0;
     static String questionText;
     static String correctAnswer;
     static boolean gameInProgress = false;
@@ -75,12 +76,13 @@ public class Server {
         while (true) {
            try {
                s = ss.accept();
+               numberOfPlayers++;
                System.err.println("New client request received : " + s);
 
                DataInputStream dis = new DataInputStream(s.getInputStream());
                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 
-               if (numberOfPlayers < 5 & !gameInProgress) {
+               if (numberOfPlayers <= 4 & !gameInProgress) {
                    System.err.println("Creating a new handler for player " + numberOfPlayers);
                    ClientHandler player = new ClientHandler(s, "Player " + numberOfPlayers, dis, dos);
                    System.err.println("Adding player " + numberOfPlayers + " to active client list");
@@ -93,7 +95,7 @@ public class Server {
                        dos.writeUTF("You are admin");
                        dos.writeUTF("Type 'Start' to start the game.");
                    }
-                   numberOfPlayers++;
+
                } else if(gameInProgress) {
                    dos.writeUTF("Game in progress. Try again later.");
                    throw new Exception("gameInProgress");

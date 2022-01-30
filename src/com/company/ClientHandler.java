@@ -13,15 +13,17 @@ class ClientHandler implements Runnable {
     final DataOutputStream dos;
     boolean isloggedin;
     boolean isInGame;
+    int numberOfPoints;
     Socket s;
 
     public ClientHandler(Socket s, String name, DataInputStream dis, DataOutputStream dos) {
         this.dis = dis;
         this.dos = dos;
         this.name = name;
-        this.s = s;
         this.isloggedin = true;
         this.isInGame = false;
+        this.numberOfPoints = 0;
+        this.s = s;
     }
 
     public String getName() {
@@ -37,7 +39,7 @@ class ClientHandler implements Runnable {
         while (true) {
            try {
                if (!Server.gameInProgress) {
-                   System.err.println(this.name + " joined the lobby");
+                   System.err.println(this.name + " has joined the lobby");
                    received = dis.readUTF();
                    if (this.name.equals("Player 1") && received.equals("Start")) {
                        Server.gameInProgress = true;
@@ -48,9 +50,10 @@ class ClientHandler implements Runnable {
                    }
                }
 
-               if(Server.sendQuestions) {
+               if (Server.sendQuestions) {
                    Server.sendQuestion();
                    Server.sendQuestions = false;
+                   Server.numberOfWrongAnswers = 0;
                }
 
                if (openStream) {
@@ -64,10 +67,16 @@ class ClientHandler implements Runnable {
                System.err.println(" receivedAnswer by " + this.getName() + " is: " + received);
 
                if (received.equals(Server.correctAnswer)) {
-                   System.err.println(" correct answer by " + this.getName());
+                   this.numberOfPoints += 1;
+                   System.err.println(" correct answer by " + this.getName() + " number of points = " + this.numberOfPoints);
                    Server.sendQuestions = true;
                } else {
                    System.err.println(" wrong answer by " + this.getName());
+                   Server.numberOfWrongAnswers += 1;
+                   System.err.println( " number of wrong answers: " + Server.numberOfWrongAnswers + " Number of players " + Server.numberOfPlayers);
+                   if (Server.numberOfPlayers == Server.numberOfWrongAnswers) {
+                       Server.sendQuestions = true;
+                   }
                }
 
                if (received.equals("logout")) {
