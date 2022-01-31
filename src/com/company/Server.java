@@ -10,6 +10,7 @@ import java.net.*;
 public class Server {
     public static Queue<Question> queueOfQuestions = new LinkedList<>();
     static Vector<ClientHandler> ar = new Vector<>();
+    static Vector<Thread> threads = new Vector<>();
     static int numberOfPlayers = 0;
     static int numberOfWrongAnswers = 0;
     static String questionText;
@@ -54,18 +55,36 @@ public class Server {
         }
     }
 
-    public static void sendQuestion() {
-        Question question = queueOfQuestions.remove();
-        questionText = question.getText();
-        correctAnswer = question.getAnswer();
-        for (ClientHandler cli : ar) {
-            try {
-                cli.dos.writeUTF(questionText);
-            } catch (IOException e) {
-                System.err.println("missing user");
+    public static void printResults() {
+        try {
+            for (ClientHandler cli : Server.ar) {
+                cli.dos.writeUTF("Results:");
+                for (ClientHandler cli2 : Server.ar) {
+                    String s = String.valueOf(cli2.getName() + ": " + cli2.getNumberOfPoints());
+                    cli.dos.writeUTF(s);
+                }
+                cli.dos.writeUTF(getWinner()+" win");
             }
+        } catch (IOException e) {
+            System.err.println("missing user");
         }
     }
+
+    public static String getWinner(){
+        int x;
+        int max=0;
+        String winner="";
+        for (ClientHandler cli : Server.ar) {
+            x = cli.getNumberOfPoints();
+            if (x > max) {
+                winner = cli.getName();
+                max = x;
+            }
+        }
+       return winner;
+
+    }
+
 
     public static void main(String[] args) throws IOException {
         ServerSocket ss = new ServerSocket(1234);
@@ -88,6 +107,7 @@ public class Server {
                    System.err.println("Adding player " + numberOfPlayers + " to active client list");
                    ar.add(player);
                    Thread t = new Thread(player);
+                   threads.add(t);
                    t.start();
                    dos.writeUTF("WELCOME!\nYour nick is Player "+ numberOfPlayers);
 
@@ -102,8 +122,6 @@ public class Server {
                } else {
                    dos.writeUTF("No place in lobby. Try again later.");
                    throw new Exception("noPlaceInLobby");
-                   //dis.close();
-                   //dos.close();
                }
            } catch (Exception e) {
                if(e.equals("gameInProgress"))
@@ -112,8 +130,6 @@ public class Server {
                    System.out.println("No place in lobby. Canceling connection ");
            }
         }
-
-
     }
 }
 
