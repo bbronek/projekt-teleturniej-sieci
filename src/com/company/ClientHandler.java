@@ -19,7 +19,9 @@ class ClientHandler implements Runnable {
     final DataOutputStream dos;
     boolean isloggedin;
     boolean isInGame;
+    boolean isBlocked;
     int numberOfPoints;
+    int numberOfWrongAnswers;
     Socket s;
     static Timer timer;
 
@@ -30,6 +32,8 @@ class ClientHandler implements Runnable {
         this.isloggedin = true;
         this.isInGame = false;
         this.numberOfPoints = 0;
+        this.numberOfWrongAnswers=0;
+        this.isBlocked=false;
         this.s = s;
     }
 
@@ -56,6 +60,12 @@ class ClientHandler implements Runnable {
                        Server.gameInProgress = true;
                        System.err.println("Game started");
                        openStream = true;
+                       //ustawianie statystyk gracza
+                       for (ClientHandler cli : Server.ar) {
+                           cli.numberOfWrongAnswers=0;
+                           cli.isBlocked=false;
+                           cli.numberOfPoints=0;
+                       }
                        //interwałowe wysyłanie pytań
                        timer = new Timer();
                        timer.schedule(new TimeOutQuestion(),0,5000);
@@ -66,37 +76,34 @@ class ClientHandler implements Runnable {
                }
                    else
                    {
-//                       if (Server.sendQuestions) {
-//                           Server.sendQuestion();
-//  chyba nie potrzebne      Server.sendQuestions = false;
-//                           Server.numberOfWrongAnswers = 0;
-//                       }
-
                        if (openStream) {
                            received = dis.readUTF();
                        } else {
                            received = tempAnswer;
                            openStream = true;
                        }
+                       if(!isBlocked){
+                           System.err.println("game functionality\n correctAnswer = " + Server.correctAnswer);
+                           System.err.println(" receivedAnswer by " + this.getName() + " is: " + received);
 
-                       System.err.println("game functionality\n correctAnswer = " + Server.correctAnswer);
-                       System.err.println(" receivedAnswer by " + this.getName() + " is: " + received);
-
-                       if (received.equals(Server.correctAnswer)) {
-                           this.numberOfPoints += 1;
-                           System.err.println(" correct answer by " + this.getName() + " number of points = " + this.numberOfPoints);
-                           Server.sendQuestions = true; //chyba już nie potrzebne
-                           timer.cancel();
-                           timer = new Timer();
-                           timer.schedule(new TimeOutQuestion(),0,5000);
-                       } else {
-                           System.err.println(" wrong answer by " + this.getName());
-                           Server.numberOfWrongAnswers += 1;
-                           System.err.println( " number of wrong answers: " + Server.numberOfWrongAnswers + " Number of players " + Server.numberOfPlayers);
-                           if (Server.numberOfPlayers == Server.numberOfWrongAnswers) {
-                               Server.sendQuestions = true; //chyba już nie potrzebne
+                           if (received.equals(Server.correctAnswer)) {
+                               this.numberOfPoints += 1;
+                               System.err.println(" correct answer by " + this.getName() + " number of points = " + this.numberOfPoints);
+                               timer.cancel();
+                               timer = new Timer();
+                               timer.schedule(new TimeOutQuestion(),0,5000);
+                               this.isBlocked=true;
+                           } else {
+                               System.err.println(" wrong answer by " + this.getName());
+                               this.numberOfWrongAnswers+=1;
+                               System.err.println(this.getName()+" gave  " + this.numberOfWrongAnswers + " wrong answers ");
+                               this.isBlocked=true;
                            }
+                       }else{
+                           dos.writeUTF("Wait. You are blocked.");
+                           received="";
                        }
+
 
                        if (received.equals("logout")) {
                            this.isloggedin = false;

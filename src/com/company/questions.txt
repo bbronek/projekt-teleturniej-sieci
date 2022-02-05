@@ -75,7 +75,7 @@ c) print("Hello World!")
 
 Which of the followings is written in camel case?=a
 a) myVariable
-c) my_variable
+b) my_variable
 c) my-variable
 
 Which one of the followings is a functional programming language?=a
@@ -88,7 +88,7 @@ a) Linus Torvalds
 b) Jose Valim
 c) Dennis Ritche
 
-What is the result of the derivetive of e^1?=c
+What is the result of the derivetive of e^1?=a
 a) e
 b) 1
 c) 0

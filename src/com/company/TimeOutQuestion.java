@@ -9,6 +9,20 @@ import java.util.TimerTask;
 public class TimeOutQuestion extends TimerTask {
 
     public void run() {
+        //oblokowywanie graczy pod warunkiem że nie udzielili 3 błędnych odpowiedzi
+        try {
+            for (ClientHandler cli : Server.ar) {
+                if (cli.numberOfWrongAnswers != 3) {
+                    cli.isBlocked = false;
+                } else {
+                    cli.numberOfWrongAnswers = 0;
+                    cli.dos.writeUTF("!!!!!\nYou are blocked for to many wrong answers. Wait for next question.\n!!!!!");
+                }
+            }
+        }catch (IOException e){
+
+        }
+        //wysyłanie pytań do graczy
         if (!Server.queueOfQuestions.isEmpty()) {
             Question question = Server.queueOfQuestions.remove();
             Server.questionText = question.getText();
@@ -21,6 +35,7 @@ public class TimeOutQuestion extends TimerTask {
                 }
             }
         } else {
+            //zakończenie gry i wyświetlanie rezultatów
             try {
                 throw new Exception("end of questions");
             } catch (Exception e) {
@@ -29,7 +44,7 @@ public class TimeOutQuestion extends TimerTask {
                 Server.correctAnswer=null;
                 Server.gameInProgress=false;
                 Server.printResults();
-                //Server.randomizingQuestions()
+                Server.randomizingQuestions(Server.listOfQuestions, Server.queueOfQuestions);
             }
         }
     }

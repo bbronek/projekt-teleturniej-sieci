@@ -9,10 +9,10 @@ import java.net.*;
  */
 public class Server {
     public static Queue<Question> queueOfQuestions = new LinkedList<>();
+    public static List<Question> listOfQuestions = new ArrayList<>();
     static Vector<ClientHandler> ar = new Vector<>();
     static Vector<Thread> threads = new Vector<>();
     static int numberOfPlayers = 0;
-    static int numberOfWrongAnswers = 0;
     static String questionText;
     static String correctAnswer;
     static boolean gameInProgress = false;
@@ -64,6 +64,7 @@ public class Server {
                     cli.dos.writeUTF(s);
                 }
                 cli.dos.writeUTF(getWinner()+" win");
+                cli.dos.writeUTF("Press anything to exit game.");
             }
         } catch (IOException e) {
             System.err.println("missing user");
@@ -89,7 +90,6 @@ public class Server {
     public static void main(String[] args) throws IOException {
         ServerSocket ss = new ServerSocket(1234);
         Socket s;
-        List<Question> listOfQuestions = new ArrayList<>();
         setQuestions(listOfQuestions, queueOfQuestions);
 
         while (true) {
