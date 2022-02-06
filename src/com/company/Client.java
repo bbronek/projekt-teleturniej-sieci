@@ -4,66 +4,52 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
-public class Client
-{
+public class Client {
     final static int ServerPort = 1234;
 
-    public static void main(String args[]) throws UnknownHostException, IOException
+    public static void main(String[] args) throws IOException
     {
         final Scanner scn = new Scanner(System.in);
 
-        // getting localhost ip
+        /* getting localhost ip */
         InetAddress ip = InetAddress.getByName("localhost");
 
-        // establish the connection
+        /* establish the connection */
         Socket s = new Socket(ip, ServerPort);
 
-        // obtaining input and out streams
+        /* obtaining input and out streams */
         final DataInputStream dis = new DataInputStream(s.getInputStream());
         final DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 
-        // sendMessage thread
-        Thread sendMessage = new Thread(new Runnable()
-        {
-            @Override
-            public void run() {
-                while (true) {
+        /* sendMessage thread */
+        Thread sendMessage = new Thread(() -> {
+            while (true) {
+                /* read the message to deliver. */
+                String msg = scn.nextLine();
 
-                    // read the message to deliver.
-                    String msg = scn.nextLine();
-
-                    try {
-                        // write on the output stream
-                        dos.writeUTF(msg);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    /* write on the output stream */
+                    dos.writeUTF(msg);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
 
-        // readMessage thread
-        Thread readMessage = new Thread(new Runnable()
-        {
-            @Override
-            public void run() {
-
-                while (true) {
-                    try {
-                        // read the message sent to this client
-                        String msg = dis.readUTF();
-                        System.out.println(msg);
-                    } catch (IOException e) {
-
-                        System.out.println("Connection with server lost");
-                        break;
-                    }
+        /* readMessage thread */
+        Thread readMessage = new Thread(() -> {
+            while (true) {
+                try {
+                    /* read the message sent to this client */
+                    String msg = dis.readUTF();
+                    System.out.println(msg);
+                } catch (IOException e) {
+                    System.out.println("Connection with server lost");
+                    break;
                 }
             }
         });
-
         sendMessage.start();
         readMessage.start();
-
     }
 }

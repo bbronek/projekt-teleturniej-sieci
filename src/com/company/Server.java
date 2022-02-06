@@ -4,20 +4,23 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
-// Server class
-public class Server
-{
-
-    // Vector to store active clients
+/**
+ * The Server class is a logic container of quiz flow
+ */
+public class Server {
+    public static Queue<Question> queueOfQuestions = new LinkedList<>();
+    public static List<Question> listOfQuestions = new ArrayList<>();
     static Vector<ClientHandler> ar = new Vector<>();
-
-    // counter for clients
-    static boolean gameInProgress=false;
-    static int i = 1;
+    static Vector<Thread> threads = new Vector<>();
+    static int numberOfPlayers = 0;
+    static String questionText;
+    static String correctAnswer;
+    static boolean gameInProgress = false;
+    static boolean sendQuestions = true;
 
     public static void setQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) throws FileNotFoundException {
         String line, answer = null;
-        String text = "";
+        StringBuilder text = new StringBuilder();
         String[] separated;
         File questions = new File("src/com/company/questions.txt");
         Scanner sc = new Scanner(questions);
@@ -25,20 +28,20 @@ public class Server
 
         while (sc.hasNextLine()) {
             line = sc.nextLine();
-            separated = line.split("\\=");
+            separated = line.split("=");
 
             if (separated.length == 2) {
-                text += separated[0] + '\n';
+                text.append(separated[0]).append('\n');
                 answer = separated[1];
-            } else if(line == "") {
-                question.setText(text);
+            } else if(line.equals("")) {
+                question.setText(text.toString());
                 question.setAnswer(answer);
-                text = "";
+                text = new StringBuilder();
                 answer = null;
                 listOfQuestions.add(question);
                 question = new Question();
             } else {
-                text += separated[0] + '\n';
+                text.append(separated[0]).append('\n');
             }
         }
         randomizingQuestions(listOfQuestions, queueOfQuestions);
@@ -52,81 +55,81 @@ public class Server
         }
     }
 
-    public static void main(String[] args) throws IOException
-    {
-        // server is listening on port 1234
-        ServerSocket ss = new ServerSocket(1234);
-        Socket s;
-        List<Question> listOfQuestions = new ArrayList<>();
-        Queue<Question> queueOfQuestions = new LinkedList<>();
-
-        setQuestions(listOfQuestions, queueOfQuestions);
-
-        // running infinite loop for getting
-        // client request
-        while (true)
-        {
-            // Accept the incoming request
-           try {
-               s = ss.accept();
-
-               System.out.println("New client request received : " + s);
-
-               // obtain input and output streams
-               DataInputStream dis = new DataInputStream(s.getInputStream());
-               DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-               if (i < 5 & !gameInProgress) {
-                   System.out.println("Creating a new handler for player " + i);
-
-                   // Create a new handler object for handling this request.
-                   ClientHandler mtch = new ClientHandler(s, "Player " + i, dis, dos);
-
-                   // Create a new Thread with this object.
-                   Thread t = new Thread(mtch);
-
-                   System.out.println("Adding player " + i  + " to active client list");
-
-                   // add this client to active clients list
-                   ar.add(mtch);
-
-                   // start the thread.
-                   t.start();
-
-                   // increment i for new client.
-                   // i is used for naming only, and can be replaced
-                   // by any naming scheme
-                   dos.writeUTF("WELCOME!\nYour nick is Player "+i);
-                   if (i == 1) {
-                       dos.writeUTF("You are admin");
-                       dos.writeUTF("Type 'Start' to start game.");
-                   }
-                   i++;
-               }else if(gameInProgress)
-               {
-                   dos.writeUTF("Game in progress. Try again later.");
-                   throw new Exception("gameInProgress");
-               }
-               else {
-                   dos.writeUTF("No place in lobby. Try again later.");
-                   throw new Exception("noPlaceInLobby");
-                   //dis.close();
-                   //dos.close();
-               }
-           }
-           catch (Exception e)
-           {
-               if(e.equals("gameInProgress"))
-                   System.out.println("Game in progress. Canceling connection ");
-               if(e.equals("noPlaceInLobby"))
-               System.out.println("No place in lobby. Canceling connection ");
-           }
+    public static void printResults() {
+        try {
+            for (ClientHandler cli : Server.ar) {
+                cli.dos.writeUTF("Results:");
+                for (ClientHandler cli2 : Server.ar) {
+                    String s = String.valueOf(cli2.getName() + ": " + cli2.getNumberOfPoints());
+                    cli.dos.writeUTF(s);
+                }
+                cli.dos.writeUTF(getWinner()+" win");
+                cli.dos.writeUTF("Press anything to exit game.");
+            }
+        } catch (IOException e) {
+            System.err.println("missing user");
         }
     }
 
-     public static void startGame() {
-         System.out.println("Game started");
-         //
-         // miejsce na kod z przebiegiem gry
-         //
-     }
+    public static String getWinner(){
+        int x;
+        int max=0;
+        String winner="";
+        for (ClientHandler cli : Server.ar) {
+            x = cli.getNumberOfPoints();
+            if (x > max) {
+                winner = cli.getName();
+                max = x;
+            }
+        }
+       return winner;
+
+    }
+
+
+    public static void main(String[] args) throws IOException {
+        ServerSocket ss = new ServerSocket(1234);
+        Socket s;
+        setQuestions(listOfQuestions, queueOfQuestions);
+
+        while (true) {
+           try {
+               s = ss.accept();
+               numberOfPlayers++;
+               System.err.println("New client request received : " + s);
+
+               DataInputStream dis = new DataInputStream(s.getInputStream());
+               DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+
+               if (numberOfPlayers <= 4 & !gameInProgress) {
+                   System.err.println("Creating a new handler for player " + numberOfPlayers);
+                   ClientHandler player = new ClientHandler(s, "Player " + numberOfPlayers, dis, dos);
+                   System.err.println("Adding player " + numberOfPlayers + " to active client list");
+                   ar.add(player);
+                   Thread t = new Thread(player);
+                   threads.add(t);
+                   t.start();
+                   dos.writeUTF("WELCOME!\nYour nick is Player "+ numberOfPlayers);
+
+                   if (numberOfPlayers == 1) {
+                       dos.writeUTF("You are admin");
+                       dos.writeUTF("Type 'Start' to start the game.");
+                   }
+
+               } else if(gameInProgress) {
+                   dos.writeUTF("Game in progress. Try again later.");
+                   throw new Exception("gameInProgress");
+               } else {
+                   dos.writeUTF("No place in lobby. Try again later.");
+                   throw new Exception("noPlaceInLobby");
+               }
+           } catch (Exception e) {
+               if(e.equals("gameInProgress"))
+                   System.out.println("Game in progress. Canceling connection ");
+               if(e.equals("noPlaceInLobby"))
+                   System.out.println("No place in lobby. Canceling connection ");
+           }
+        }
+    }
 }
+
