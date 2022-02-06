@@ -10,6 +10,7 @@ import java.net.*;
 public class Server {
     public static Queue<Question> queueOfQuestions = new LinkedList<>();
     public static List<Question> listOfQuestions = new ArrayList<>();
+    public static List<ClientHandler> listOfLeaders = new ArrayList<>();
     static Vector<ClientHandler> ar = new Vector<>();
     static Vector<Thread> threads = new Vector<>();
     static int numberOfPlayers = 0;
@@ -21,7 +22,7 @@ public class Server {
     static boolean sendQuestions = true;
     static boolean adminSetNumberOfPlayers = true;
 
-    public static void setQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) throws FileNotFoundException {
+    public static void setQuestions() throws FileNotFoundException {
         String line, answer = null;
         StringBuilder text = new StringBuilder();
         String[] separated;
@@ -48,53 +49,65 @@ public class Server {
                 }
             }
         }
-        randomizingQuestions(listOfQuestions, queueOfQuestions);
+        randomizingQuestions();
     }
 
-    public static void randomizingQuestions(List<Question> listOfQuestions, Queue<Question> queueOfQuestions) {
+    public static void randomizingQuestions() {
         Collections.shuffle(listOfQuestions);
 
-        for (int i = 0; i< 10; ++i) {
+        for (int i = 0; i < 10; ++i) {
             queueOfQuestions.add(listOfQuestions.get(i));
         }
     }
 
     public static void printResults() {
         try {
-            for (ClientHandler cli : Server.ar) {
+            for (ClientHandler cli : ar) {
                 cli.dos.writeUTF("======Results======");
-                for (ClientHandler cli2 : Server.ar) {
-                    String s = String.valueOf(cli2.getUsername() + cli2.getNumberOfPoints());
+                for (ClientHandler cli2 : ar) {
+                    String s = String.valueOf(cli2.getUsername() + ": " + cli2.getNumberOfPoints());
                     cli.dos.writeUTF(s);
                 }
-                cli.dos.writeUTF(getWinner() + "is the winnner!");
-                cli.dos.writeUTF("Press anything to exit game.");
+                setLeaders();
+                if (listOfLeaders.size() > 1) {
+                    if (listOfLeaders.get(0).getNumberOfPoints() == 0) {
+                        cli.dos.writeUTF("There are no winners everyone is a loser with 0 points");
+                    } else {
+                        cli.dos.writeUTF("There are " + listOfLeaders.size() + " winners!");
+                        for (ClientHandler leader: listOfLeaders) {
+                            cli.dos.writeUTF(leader.getUsername() + " is the winner!");
+                        }
+                    }
+                } else {
+                    ClientHandler leader = listOfLeaders.get(0);
+                    if (leader.getNumberOfPoints() == 0) {
+                        cli.dos.writeUTF("There is no winner you are a loser with 0 points");
+                    } else if (numberOfPlayers == 1) {
+                        cli.dos.writeUTF("You are a winner!");
+                    } else {
+                        cli.dos.writeUTF(leader.getUsername() + " is a winner!");
+                    }
+                }
             }
         } catch (IOException e) {
             System.err.println("missing user");
         }
     }
 
-    public static String getWinner() {
-        int x;
-        int max = 0;
-        String winner = "";
+    public static void setLeaders() {
+        ClientHandler leader = Collections.max(ar, Comparator.comparing(clientHandler -> clientHandler.getNumberOfPoints()));
 
-        for (ClientHandler cli : Server.ar) {
-            x = cli.getNumberOfPoints();
-            if (x > max) {
-                winner = cli.getUsername();
-                max = x;
+        for (ClientHandler cli: Server.ar) {
+            if (cli.getNumberOfPoints() == leader.getNumberOfPoints()) {
+                listOfLeaders.add(cli);
             }
         }
-
-       return winner;
     }
 
     public static void main(String[] args) throws IOException {
         ServerSocket ss = new ServerSocket(1234);
         Socket s;
-        setQuestions(listOfQuestions, queueOfQuestions);
+        setQuestions();
 
         while (true) {
            try {

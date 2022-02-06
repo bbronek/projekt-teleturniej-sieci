@@ -36,7 +36,7 @@ public class TimeOutQuestion extends TimerTask {
                 Server.correctAnswer = null;
                 Server.gameInProgress = false;
                 Server.printResults();
-                Server.randomizingQuestions(Server.listOfQuestions, Server.queueOfQuestions);
+                Server.randomizingQuestions();
         }
     }
 }

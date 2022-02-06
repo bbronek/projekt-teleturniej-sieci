@@ -19,7 +19,7 @@ class ClientHandler implements Runnable {
     boolean isInGame;
     boolean isBlocked;
     boolean isUsernameSetted;
-    boolean ansewerInLastStream;
+    boolean answerInLastStream;
     int numberOfPoints;
     int numberOfWrongAnswers;
     static Timer timer;
@@ -32,7 +32,7 @@ class ClientHandler implements Runnable {
         this.isInGame = false;
         this.isBlocked = false;
         this.isUsernameSetted = false;
-        this.ansewerInLastStream = false;
+        this.answerInLastStream = false;
         this.numberOfPoints = 0;
         this.numberOfWrongAnswers = 0;
         this.s = s;
@@ -100,7 +100,7 @@ class ClientHandler implements Runnable {
                 timer = new Timer();
                 timer.schedule(new TimeOutQuestion(),0,5000);
             } else {
-                dos.writeUTF("Error: Wrong command: " + received +'\n' );
+                dos.writeUTF("Error: Wrong command: " + received + "\n3/3: Type \"Start\" to start the gameplay" );
             }
         } else {
             if (received.equals("Start")) {
@@ -129,16 +129,16 @@ class ClientHandler implements Runnable {
             dos.writeUTF("Error: Wrong command: " + received );
         } else {
             tempAnswer = received;
-            ansewerInLastStream = true;
+            answerInLastStream = true;
         }
     }
 
     public void gameplayHandler() throws IOException {
         String received = "";
 
-        if (ansewerInLastStream) {
+        if (answerInLastStream) {
             received = tempAnswer;
-            ansewerInLastStream = false;
+            answerInLastStream = false;
         } else {
             received = dis.readUTF();
         }
