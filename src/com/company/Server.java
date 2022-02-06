@@ -62,12 +62,12 @@ public class Server {
     public static void printResults() {
         try {
             for (ClientHandler cli : Server.ar) {
-                cli.dos.writeUTF("Results:");
+                cli.dos.writeUTF("======Results======");
                 for (ClientHandler cli2 : Server.ar) {
-                    String s = String.valueOf(cli2.getUsername() + ": " + cli2.getNumberOfPoints());
+                    String s = String.valueOf(cli2.getUsername() + cli2.getNumberOfPoints());
                     cli.dos.writeUTF(s);
                 }
-                cli.dos.writeUTF(getWinner()+" win");
+                cli.dos.writeUTF(getWinner() + "is the winnner!");
                 cli.dos.writeUTF("Press anything to exit game.");
             }
         } catch (IOException e) {

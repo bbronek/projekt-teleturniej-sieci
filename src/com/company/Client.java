@@ -9,14 +9,10 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
         InetAddress ip = InetAddress.getByName("localhost");
-        final Scanner scn;
-        final DataInputStream dis;
-        final DataOutputStream dos;
-        try (Socket s = new Socket(ip, SERVERPORT)) {
-            scn = new Scanner(System.in);
-            dis = new DataInputStream(s.getInputStream());
-            dos = new DataOutputStream(s.getOutputStream());
-        }
+        Socket s = new Socket(ip, SERVERPORT);
+        final Scanner scn = new Scanner(System.in);
+        final DataInputStream dis = new DataInputStream(s.getInputStream());
+        final DataOutputStream dos = new DataOutputStream(s.getOutputStream());
 
         Thread sendMessage = new Thread(() -> {
             while (true) {
@@ -41,6 +37,7 @@ public class Client {
                 }
             }
         });
+
         sendMessage.start();
         readMessage.start();
     }
