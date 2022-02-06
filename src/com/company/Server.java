@@ -62,13 +62,13 @@ public class Server {
 
     public static void printResults() {
         try {
+            setLeaders();
             for (ClientHandler cli : ar) {
                 cli.dos.writeUTF("======Results======");
                 for (ClientHandler cli2 : ar) {
                     String s = String.valueOf(cli2.getUsername() + ": " + cli2.getNumberOfPoints());
                     cli.dos.writeUTF(s);
                 }
-                setLeaders();
                 if (listOfLeaders.size() > 1) {
                     if (listOfLeaders.get(0).getNumberOfPoints() == 0) {
                         cli.dos.writeUTF("There are no winners everyone is a loser with 0 points");

@@ -86,7 +86,7 @@ class ClientHandler implements Runnable {
                 } else if (Server.numberOfPlayers < Server.numberOfPlayersPerGame) {
                     dos.writeUTF("Waiting for other players to join the game..." );
                 }
-        } else if (Server.numberOfPlayers == Server.numberOfSettedUsernames) {
+        } else if (Server.numberOfPlayersPerGame == Server.numberOfSettedUsernames) {
             if (received.equals("Start")) {
                 Server.gameInProgress = true;
                 System.err.println("Game started");
@@ -104,7 +104,7 @@ class ClientHandler implements Runnable {
             }
         } else {
             if (received.equals("Start")) {
-                dos.writeUTF("You have to wait for other players to join and set their usernames \n" );
+                dos.writeUTF("You have to wait for other players to join and set their usernames" );
             } else {
                 dos.writeUTF("Error: Wrong command: " + received );
             }
