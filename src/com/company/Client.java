@@ -5,30 +5,24 @@ import java.net.*;
 import java.util.Scanner;
 
 public class Client {
-    final static int ServerPort = 1234;
+    static final int SERVERPORT = 1234;
 
-    public static void main(String[] args) throws IOException
-    {
-        final Scanner scn = new Scanner(System.in);
-
-        /* getting localhost ip */
+    public static void main(String[] args) throws IOException {
         InetAddress ip = InetAddress.getByName("localhost");
+        final Scanner scn;
+        final DataInputStream dis;
+        final DataOutputStream dos;
+        try (Socket s = new Socket(ip, SERVERPORT)) {
+            scn = new Scanner(System.in);
+            dis = new DataInputStream(s.getInputStream());
+            dos = new DataOutputStream(s.getOutputStream());
+        }
 
-        /* establish the connection */
-        Socket s = new Socket(ip, ServerPort);
-
-        /* obtaining input and out streams */
-        final DataInputStream dis = new DataInputStream(s.getInputStream());
-        final DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-
-        /* sendMessage thread */
         Thread sendMessage = new Thread(() -> {
             while (true) {
-                /* read the message to deliver. */
                 String msg = scn.nextLine();
 
                 try {
-                    /* write on the output stream */
                     dos.writeUTF(msg);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -36,11 +30,9 @@ public class Client {
             }
         });
 
-        /* readMessage thread */
         Thread readMessage = new Thread(() -> {
             while (true) {
                 try {
-                    /* read the message sent to this client */
                     String msg = dis.readUTF();
                     System.out.println(msg);
                 } catch (IOException e) {

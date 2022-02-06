@@ -1,118 +1,174 @@
 package com.company;
 
 
-import java.io.*;
-import java.net.*;
-import java.util.Arrays;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.Timer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * ClientHandler class
  */
 class ClientHandler implements Runnable {
-    final String name;
+    String username;
+    final Integer id;
     final DataInputStream dis;
     final DataOutputStream dos;
-    boolean isloggedin;
     boolean isInGame;
     boolean isBlocked;
+    boolean isUsernameSetted;
     int numberOfPoints;
     int numberOfWrongAnswers;
-    Socket s;
     static Timer timer;
+    Socket s;
 
-    public ClientHandler(Socket s, String name, DataInputStream dis, DataOutputStream dos) {
+    public ClientHandler(Socket s, Integer id, DataInputStream dis, DataOutputStream dos) {
         this.dis = dis;
         this.dos = dos;
-        this.name = name;
-        this.isloggedin = true;
+        this.id = id;
         this.isInGame = false;
+        this.isBlocked = false;
+        this.isUsernameSetted = false;
         this.numberOfPoints = 0;
-        this.numberOfWrongAnswers=0;
-        this.isBlocked=false;
+        this.numberOfWrongAnswers = 0;
         this.s = s;
+        this.username = "Player " + id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() { return username; }
+
+    public void setUsername(String username) {
+        this.username = username;
+        this.isUsernameSetted = true;
     }
 
-    public int getNumberOfPoints() {
-        return numberOfPoints;
+    public int getNumberOfPoints() { return numberOfPoints; }
+
+    public static boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    public void adminLobbyHandler(String received) throws IOException {
+        int numberOfPlayers;
+
+        if (Server.adminSetNumberOfPlayers) {
+            if (isInteger(received)) {
+                numberOfPlayers = Integer.parseInt(received);
+                if (numberOfPlayers >= 1 && numberOfPlayers  <= 4) {
+                    Server.numberOfPlayersPerGame = numberOfPlayers;
+                    Server.adminSetNumberOfPlayers = false;
+                    System.err.println("Admin has set number of players to: " + numberOfPlayers);
+                    dos.writeUTF("You have successfully set number of players for this game.\n2/3: Please now enter your username:" );
+                } else {
+                    System.err.println("Error with setting number of players: Admin has written number out of range: " + received);
+                    dos.writeUTF("1/3: You have to provide number between 1 and 4. Your number: " + numberOfPlayers + " is out of the range");
+                }
+            } else {
+                System.err.println("Error with setting number of players: Admin has written: " + received);
+                dos.writeUTF("1/3: You have to provide number between 1 and 4. Your command: " + received + " can not be converted to Integer");
+            }
+        } else if (!this.isUsernameSetted) {
+                this.setUsername(received);
+                Server.numberOfSettedUsernames += 1;
+                dos.writeUTF("You have successfully set your username\n" );
+
+                if (Server.numberOfPlayers == 1) {
+                    dos.writeUTF("It looks like you want to play alone\n3/3: Type \"Start\" to start the gameplay");
+                } else if (Server.numberOfPlayers < Server.numberOfPlayersPerGame) {
+                    dos.writeUTF("Waiting for other players to join the game..." );
+                }
+        } else if (Server.numberOfPlayers == Server.numberOfSettedUsernames) {
+            if (received.equals("Start")) {
+                Server.gameInProgress = true;
+                System.err.println("Game started");
+
+                for (ClientHandler cli : Server.ar) {
+                    cli.numberOfWrongAnswers = 0;
+                    cli.isBlocked = false;
+                    cli.numberOfPoints = 0;
+                }
+
+                timer = new Timer();
+                timer.schedule(new TimeOutQuestion(),0,5000);
+            } else {
+                dos.writeUTF("Error: Wrong command: " + received +'\n' );
+            }
+        } else {
+            if (received.equals("Start")) {
+                dos.writeUTF("You have to wait for other players to join and set their usernames \n" );
+            } else {
+                dos.writeUTF("Error: Wrong command: " + received );
+            }
+        }
+    }
+
+    public void playerLobbyHandler(String received) throws IOException {
+        if (!this.isUsernameSetted) {
+            this.setUsername(received);
+            Server.numberOfSettedUsernames += 1;
+            dos.writeUTF("You have successfully set your username");
+
+            if (Server.numberOfPlayers < Server.numberOfPlayersPerGame) {
+                dos.writeUTF("Waiting for other players to join the game..." );
+            } else if ((Server.numberOfPlayers == Server.numberOfPlayersPerGame) && (Server.numberOfSettedUsernames != Server.numberOfPlayersPerGame )) {
+                dos.writeUTF("Waiting for other players to set their usernames..." );
+            } else {
+                dos.writeUTF("Waiting for admin to start the gameplay..." );
+                Server.ar.get(0).dos.writeUTF("It looks like everyone has joined the game and set their usernames\n3/3: Type \"Start\" to start the gameplay");
+            }
+        }
+    }
+
+    public void gameplayHandler() throws IOException {
+        String received = dis.readUTF();
+
+        if (!isBlocked) {
+            System.err.println("game functionality\n correctAnswer = " + Server.correctAnswer);
+            System.err.println(" receivedAnswer by " + this.getUsername() + " is: " + received);
+
+            if (received.equals(Server.correctAnswer)) {
+                this.numberOfPoints += 1;
+                System.err.println(" correct answer by " + this.getUsername() + " number of points = " + this.numberOfPoints);
+                timer.cancel();
+                timer = new Timer();
+                timer.schedule(new TimeOutQuestion(),0,5000);
+                this.isBlocked = true;
+            } else {
+                System.err.println(" wrong answer by " + this.getUsername());
+                this.numberOfWrongAnswers+=1;
+                System.err.println(this.getUsername() + " gave  " + this.numberOfWrongAnswers + " wrong answers ");
+                this.isBlocked=true;
+            }
+        } else {
+            dos.writeUTF("Wait. You are blocked.");
+        }
     }
 
     @Override
     public void run() {
         String received = "";
-        String tempAnswer = "";
-        boolean openStream = false;
 
         while (!Thread.interrupted()) {
            try {
                    if (!Server.gameInProgress) {
-                   System.err.println(this.name + " has joined the lobby");
-                   received = dis.readUTF();
-                   if (this.name.equals("Player 1") && received.equals("Start")) {
-                       Server.gameInProgress = true;
-                       System.err.println("Game started");
-                       openStream = true;
-                       //ustawianie statystyk gracza
-                       for (ClientHandler cli : Server.ar) {
-                           cli.numberOfWrongAnswers=0;
-                           cli.isBlocked=false;
-                           cli.numberOfPoints=0;
-                       }
-                       //interwałowe wysyłanie pytań
-                       timer = new Timer();
-                       timer.schedule(new TimeOutQuestion(),0,5000);
-
-                   } else {
-                       tempAnswer = received;
-                   }
-               }
-                   else
-                   {
-                       if (openStream) {
-                           received = dis.readUTF();
+                       received = dis.readUTF();
+                       System.err.println("Player with id: " + this.id + " has joined the lobby");
+                       if (this.id == 1 ) {
+                           adminLobbyHandler(received);
                        } else {
-                           received = tempAnswer;
-                           openStream = true;
+                           playerLobbyHandler(received);
                        }
-                       if(!isBlocked){
-                           System.err.println("game functionality\n correctAnswer = " + Server.correctAnswer);
-                           System.err.println(" receivedAnswer by " + this.getName() + " is: " + received);
-
-                           if (received.equals(Server.correctAnswer)) {
-                               this.numberOfPoints += 1;
-                               System.err.println(" correct answer by " + this.getName() + " number of points = " + this.numberOfPoints);
-                               timer.cancel();
-                               timer = new Timer();
-                               timer.schedule(new TimeOutQuestion(),0,5000);
-                               this.isBlocked=true;
-                           } else {
-                               System.err.println(" wrong answer by " + this.getName());
-                               this.numberOfWrongAnswers+=1;
-                               System.err.println(this.getName()+" gave  " + this.numberOfWrongAnswers + " wrong answers ");
-                               this.isBlocked=true;
-                           }
-                       }else{
-                           dos.writeUTF("Wait. You are blocked.");
-                           received="";
-                       }
-
-
-                       if (received.equals("logout")) {
-                           this.isloggedin = false;
-                           this.s.close();
-                           break;
-                       }
+                   } else {
+                        gameplayHandler();
                    }
            } catch (IOException e) {
-               System.err.println(this.name + " disconnected");
+               System.err.println(this.username + " disconnected");
                Server.numberOfPlayers -= 1;
                Server.ar.remove(this);
                break;
@@ -120,7 +176,6 @@ class ClientHandler implements Runnable {
         }
 
         try {
-            /* closing resources */
             this.dis.close();
             this.dos.close();
         } catch(IOException e) {
